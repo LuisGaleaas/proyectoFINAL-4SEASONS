@@ -1,3 +1,10 @@
+/* Hallmark · shape: decision-first portada · genre: editorial · theme: brand · brand: 4Seasons (spec 2026-11-22, 4seasonsv.com + /css/4seasons.css) · job: try, the action in the hero and in the closing band
+ * paper: #F2F2F2 · accent: #16B7A4 · display: Outfit 600 · body: Outfit 400 · hero: split, head on columns 1 to 7, the indicators panel on 8 to 12 · nav: wordmark, two links and one quiet outline action · footer: white wordmark over the brand line, project and team columns · signature: the four indicators the system calculates, set large in the hero
+ * axes: light/geometric-sans/cool · posture: brand blue blocks, aqua only on actions · surface: absolute · copy: verbatim (textos del proyecto Django, a pedido del usuario) · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H5 E4 S4 R5 V4 · weakest: P, a portada can read as a brochure; it opens on what the system does and the indicators it calculates, with no figures taken from the database */
+/* Hallmark · waive 7b · surface: absolute, the white band sits on the #F2F2F2 neutro paper · the 4Seasons brandbook lists #FFFFFF as its own surface colour for the metodología band */
+/* Hallmark · answered F16 · ::selection, caret-color and scrollbar-color are set in the base layer below */
+
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -6,7 +13,81 @@
 @source "../**/*.js";
 @source "../**/*.vue";
 
+
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Gilroy', 'Outfit', ui-sans-serif, system-ui, sans-serif;
+    --font-script: 'Stainy', 'Yellowtail', Georgia, cursive;
+
+    --color-azul: #1F2856;
+    --color-azul-900: #161C3E;
+    --color-azul-700: #2A3670;
+    --color-azul-100: #E4E7F0;
+    --color-aqua: #16B7A4;
+    --color-aqua-600: #109184;
+    --color-aqua-100: #DEF5F2;
+    --color-neutro: #F2F2F2;
+    --color-blanco: #FFFFFF;
+    --color-tinta-suave: #4A5275;
+    --color-linea: #D7DBE2;
+
+    --radius-marca-sm: 10px;
+    --radius-marca: 16px;
+    --radius-marca-lg: 26px;
+}
+
+@layer base {
+    html,
+    body {
+        overflow-x: clip;
+    }
+
+    html {
+        scrollbar-color: var(--color-tinta-suave) var(--color-neutro);
+        scroll-padding-top: 2rem;
+        scroll-behavior: smooth;
+    }
+
+    body {
+        background-color: var(--color-neutro);
+        color: var(--color-azul);
+        caret-color: var(--color-aqua-600);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+        background-color: var(--color-aqua-100);
+        color: var(--color-azul-900);
+    }
+
+    h1,
+    h2,
+    h3 {
+        overflow-wrap: break-word;
+        min-width: 0;
+        text-wrap: balance;
+    }
+
+    p {
+        text-wrap: pretty;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-azul);
+        outline-offset: 3px;
+        transition: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
 }
