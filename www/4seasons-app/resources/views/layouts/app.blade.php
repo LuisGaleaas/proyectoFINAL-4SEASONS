@@ -39,9 +39,10 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ url('/dashboard') }}"
-                           class="rounded-sm py-1 text-tinta-suave transition-[color,background-color,border-color,text-decoration-color] duration-200 hover:text-azul">
-                            Tablero de evaluación
+                        <a href="{{ route('dashboard') }}"
+                         @if (request()->routeIs('dashboard')) aria-current="page" @endif
+                         class="rounded-sm py-1 text-tinta-suave transition-[color,background-color,border-color,text-decoration-color] duration-200 hover:text-azul aria-[current=page]:font-medium aria-[current=page]:text-azul aria-[current=page]:underline aria-[current=page]:decoration-aqua aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-[0.25em]">
+                         Tablero de evaluación
                         </a>
                     </li>
                     <li>

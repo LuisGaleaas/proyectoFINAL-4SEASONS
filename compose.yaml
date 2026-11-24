@@ -6,10 +6,10 @@ services:
       args:
         HOST_UID: ${HOST_UID:-1000}
         HOST_GID: ${HOST_GID:-1000}
-    container_name: servidor_laravel
+    container_name: servidor_laravelSIC
     ports:
-      - "127.0.0.1:8083:80"
-      - "127.0.0.1:5173:5173"
+      - "127.0.0.1:8084:80"
+      - "127.0.0.1:5177:5177"
     volumes:
       - ./www:/var/www/html
     depends_on:
@@ -19,14 +19,14 @@ services:
 
   db:
     image: postgres:17
-    container_name: servidor_postgres
+    container_name: servidor_postgresSIC
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root123
       POSTGRES_DB: postgres
       TZ: America/El_Salvador
     ports:
-      - "127.0.0.1:5433:5432"
+      - "127.0.0.1:5436:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -38,13 +38,13 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: servidor_pgadmin
+    container_name: servidor_pgadminSIC
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: admin123
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     ports:
-      - "127.0.0.1:8087:80"
+      - "127.0.0.1:8088:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
       - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
