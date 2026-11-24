@@ -1,59 +1,71 @@
 @extends('layouts.app')
 
-@section('title', '4Seasons | Acceso Administrativo')
+@section('title', '4Seasons | Acceso administrativo')
 
 @section('content')
-    <div class="mx-auto max-w-md px-4 py-16 sm:px-6">
-        <div class="rounded-marca border border-linea bg-blanco p-8 shadow-xs">
-            <p class="text-xs font-semibold tracking-wider text-aqua-600 uppercase">Panel de Administración</p>
-            <h1 class="mt-1 text-2xl font-semibold text-azul">Iniciar sesión</h1>
-            <p class="mt-2 text-sm text-tinta-suave">
+    <div class="mx-auto grid max-w-6xl gap-10 px-4 pt-10 pb-24 sm:px-6 lg:grid-cols-12 lg:items-start lg:px-8 lg:pt-16">
+        <div class="lg:col-span-5 lg:pt-6">
+            <h1 class="text-4xl leading-[1.1] font-semibold tracking-[-0.02em] text-azul sm:text-5xl">
+                Panel de administración
+            </h1>
+            <p class="mt-4 max-w-md text-lg leading-relaxed text-tinta-suave">
                 Ingresa tus credenciales para gestionar la empresa, las alternativas de inversión y sus respaldos documentales.
             </p>
+        </div>
 
-            @if ($errors->any())
-                <div class="mt-5 rounded-marca-sm border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
-                    {{ $errors->first() }}
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('login.post') }}" class="mt-6 space-y-4">
+        <div class="min-w-0 lg:col-span-6 lg:col-start-7">
+            <form method="POST" action="{{ route('login.post') }}"
+                  class="rounded-marca-lg border border-linea bg-blanco p-6 sm:p-9">
                 @csrf
 
-                <div>
-                    <label for="email" class="mb-1 block text-sm font-medium text-azul">Correo electrónico</label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value="{{ old('email') }}"
-                        required
-                        autofocus
-                        class="w-full rounded-marca-sm border border-linea bg-blanco px-3.5 py-2.5 text-sm text-azul focus:border-aqua focus:outline-none"
-                    />
+                <h2 class="text-2xl font-semibold text-azul">Iniciar sesión</h2>
+
+                @if ($errors->any())
+                    <div role="alert" class="aviso mt-5 bg-peligro-100 text-peligro">
+                        <x-icono nombre="alerta" class="mt-0.5 size-5" />
+                        <p>{{ $errors->first() }}</p>
+                    </div>
+                @endif
+
+                <div class="mt-6 space-y-5">
+                    <div>
+                        <label for="email" class="etiqueta">Correo electrónico</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            required
+                            autofocus
+                            autocomplete="username"
+                            @error('email') aria-invalid="true" @enderror
+                            class="campo"
+                        />
+                    </div>
+
+                    <div>
+                        <label for="password" class="etiqueta">Contraseña</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            required
+                            autocomplete="current-password"
+                            @error('password') aria-invalid="true" @enderror
+                            class="campo"
+                        />
+                    </div>
+
+                    <label class="flex cursor-pointer items-center gap-3 text-[15px] text-tinta-suave">
+                        <input type="checkbox" name="remember"
+                               class="size-5 cursor-pointer rounded-sm border-linea accent-aqua-600" />
+                        Mantener sesión iniciada
+                    </label>
                 </div>
 
-                <div>
-                    <label for="password" class="mb-1 block text-sm font-medium text-azul">Contraseña</label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        required
-                        class="w-full rounded-marca-sm border border-linea bg-blanco px-3.5 py-2.5 text-sm text-azul focus:border-aqua focus:outline-none"
-                    />
-                </div>
-
-                <label class="flex items-center gap-2 text-xs text-tinta-suave">
-                    <input type="checkbox" name="remember" class="rounded border-linea text-aqua focus:ring-aqua" />
-                    Mantener sesión iniciada
-                </label>
-
-                <button
-                    type="submit"
-                    class="w-full cursor-pointer rounded-marca-sm bg-azul px-5 py-2.5 text-sm font-medium text-blanco transition hover:bg-azul-700"
-                >
+                <button type="submit" class="btn btn-primario mt-8 min-h-12 w-full text-base">
                     Ingresar al panel
+                    <x-icono nombre="flecha-der" class="size-5" />
                 </button>
             </form>
         </div>

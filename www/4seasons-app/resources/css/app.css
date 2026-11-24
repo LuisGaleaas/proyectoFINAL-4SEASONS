@@ -4,6 +4,7 @@
 /* Hallmark · pre-emit critique: P4 H5 E4 S4 R5 V4 · weakest: P, a portada can read as a brochure; it opens on what the system does and the indicators it calculates, with no figures taken from the database */
 /* Hallmark · waive 7b · surface: absolute, the white band sits on the #F2F2F2 neutro paper · the 4Seasons brandbook lists #FFFFFF as its own surface colour for the metodología band */
 /* Hallmark · answered F16 · ::selection, caret-color and scrollbar-color are set in the base layer below */
+/* Hallmark · redesign: restyle · scope: app · screens: /login, /admin, /admin/empresas/*, /admin/alternativas/*, /dashboard · theme: brand (locked from the portada) · forms: label over field, units inside the field, one aqua primary per screen, icons as SVG beside the text, never glyphs or emoji · states: peligro/exito/aviso tokens replace the stock rose, emerald, amber, sky and slate · copy: sentence case, eyebrows folded, middle-dot strings split */
 
 @import 'tailwindcss';
 
@@ -29,6 +30,13 @@
     --color-blanco: #FFFFFF;
     --color-tinta-suave: #4A5275;
     --color-linea: #D7DBE2;
+
+    --color-peligro: #A8323A;
+    --color-peligro-100: #F8E6E7;
+    --color-exito: #127A5A;
+    --color-exito-100: #E1F3EC;
+    --color-aviso: #8A5B0B;
+    --color-aviso-100: #FBF0DC;
 
     --radius-marca-sm: 10px;
     --radius-marca: 16px;
@@ -89,5 +97,93 @@
             animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
         }
+    }
+}
+
+/* Panel administrativo y tablero: campos y botones compartidos */
+@layer components {
+    .etiqueta {
+        @apply mb-1.5 block text-[15px] font-medium text-azul;
+    }
+
+    .ayuda {
+        @apply mt-1.5 text-sm text-tinta-suave;
+    }
+
+    .error-campo {
+        @apply mt-1.5 text-sm font-medium text-peligro;
+    }
+
+    .campo {
+        @apply block h-11 w-full min-w-0 rounded-marca-sm border border-linea bg-blanco px-3.5 text-base text-azul transition-[border-color] duration-150 placeholder:text-tinta-suave/60 hover:border-tinta-suave/50 focus:border-azul focus:ring-3 focus:ring-aqua/30 focus:outline-none disabled:cursor-not-allowed disabled:bg-neutro disabled:text-tinta-suave aria-invalid:border-peligro aria-invalid:focus:ring-peligro/20;
+    }
+
+    .campo-compacto {
+        @apply h-10 px-3 text-[15px];
+    }
+
+    textarea.campo {
+        @apply h-auto min-h-24 py-2.5 leading-relaxed;
+    }
+
+    /* Campo con unidad: <div class="campo-unidad"><span>$</span><input class="campo"></div> */
+    .campo-unidad {
+        @apply relative;
+    }
+
+    .campo-unidad > span {
+        @apply pointer-events-none absolute inset-y-0 flex items-center text-[15px] text-tinta-suave;
+    }
+
+    .campo-unidad > span:first-child {
+        @apply left-3.5;
+    }
+
+    .campo-unidad > span:last-child:not(:first-child) {
+        @apply right-3.5;
+    }
+
+    .campo-unidad > span:first-child ~ .campo {
+        @apply pl-8;
+    }
+
+    .campo-unidad > .campo:has(+ span) {
+        @apply pr-14;
+    }
+
+    .btn {
+        @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-marca-sm px-4 text-[15px] font-medium whitespace-nowrap transition-[color,background-color,border-color] duration-150 select-none disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .btn:active {
+        transform: translateY(1px);
+    }
+
+    .btn-primario {
+        @apply bg-aqua text-azul-900 hover:bg-aqua-600;
+    }
+
+    .btn-secundario {
+        @apply border border-azul/25 bg-blanco text-azul hover:border-azul;
+    }
+
+    .btn-fantasma {
+        @apply text-tinta-suave hover:bg-azul-100/60 hover:text-azul;
+    }
+
+    .btn-peligro {
+        @apply border border-peligro/30 bg-blanco text-peligro hover:border-peligro hover:bg-peligro-100;
+    }
+
+    .btn-chico {
+        @apply min-h-9 gap-1.5 px-3 text-sm;
+    }
+
+    .btn-icono {
+        @apply inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-marca-sm text-tinta-suave transition-[color,background-color] duration-150 hover:bg-peligro-100 hover:text-peligro;
+    }
+
+    .aviso {
+        @apply flex gap-3 rounded-marca-sm px-4 py-3 text-[15px];
     }
 }

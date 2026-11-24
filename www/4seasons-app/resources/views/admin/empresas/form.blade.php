@@ -1,21 +1,22 @@
 @extends('layouts.app')
 
-@section('title', '4Seasons | ' . ($empresa->exists ? 'Editar Empresa' : 'Registrar Empresa'))
+@section('title', '4Seasons | ' . ($empresa->exists ? 'Editar empresa' : 'Registrar empresa'))
 
 @section('content')
-    <div class="mx-auto max-w-3xl px-4 pt-6 pb-20 sm:px-6 lg:px-8">
-        <div class="mb-6 flex items-center justify-between border-b border-linea pb-4">
-            <h1 class="text-2xl font-semibold text-azul">
-                {{ $empresa->exists ? 'Editar Empresa' : 'Registrar Empresa' }}
-            </h1>
-            <a href="{{ route('admin.index') }}" class="text-sm font-medium text-tinta-suave hover:text-azul">
-                ← Volver al panel
-            </a>
-        </div>
+    <div class="mx-auto max-w-4xl px-4 pt-6 pb-24 sm:px-6 lg:px-8">
+        <a href="{{ route('admin.index') }}" class="btn btn-fantasma btn-chico -ml-3">
+            <x-icono nombre="flecha-izq" class="size-4" />
+            Volver al panel
+        </a>
+
+        <h1 class="mt-4 text-3xl leading-tight font-semibold tracking-[-0.02em] text-azul sm:text-4xl">
+            {{ $empresa->exists ? 'Editar empresa' : 'Registrar empresa' }}
+        </h1>
 
         @if ($errors->any())
-            <div class="mb-6 rounded-marca-sm border border-rose-200 bg-rose-50 p-4 text-xs text-rose-800">
-                <ul class="list-disc space-y-1 pl-4">
+            <div role="alert" class="aviso mt-6 bg-peligro-100 text-peligro">
+                <x-icono nombre="alerta" class="mt-0.5 size-5" />
+                <ul class="space-y-1">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -25,59 +26,75 @@
 
         <form method="POST"
               action="{{ $empresa->exists ? route('admin.empresas.update', $empresa) : route('admin.empresas.store') }}"
-              class="space-y-5 rounded-marca border border-linea bg-blanco p-6 shadow-xs">
+              class="mt-8 rounded-marca-lg border border-linea bg-blanco">
             @csrf
             @if ($empresa->exists)
                 @method('PUT')
             @endif
 
-            <div class="grid gap-5 sm:grid-cols-2">
+            <fieldset class="grid gap-x-5 gap-y-6 p-6 sm:grid-cols-2 sm:p-8">
+                <legend class="sr-only">Datos de la empresa</legend>
+
                 <div>
-                    <label for="nombre" class="mb-1 block text-sm font-medium text-azul">Nombre de la empresa</label>
+                    <label for="nombre" class="etiqueta">Nombre de la empresa</label>
                     <input type="text" id="nombre" name="nombre" maxlength="150" required
                            value="{{ old('nombre', $empresa->nombre ?? '4Seasons') }}"
-                           class="w-full rounded-marca-sm border border-linea px-3.5 py-2 text-sm text-azul focus:border-aqua focus:outline-none" />
+                           @error('nombre') aria-invalid="true" aria-describedby="nombre-error" @enderror
+                           class="campo" />
+                    @error('nombre') <p id="nombre-error" class="error-campo">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label for="tasa_impuesto" class="mb-1 block text-sm font-medium text-azul">Tasa ISR (%)</label>
-                    <input type="number" id="tasa_impuesto" name="tasa_impuesto" step="0.01" min="0" max="100" required
-                           value="{{ old('tasa_impuesto', $empresa->tasa_impuesto ?? '30.00') }}"
-                           class="w-full rounded-marca-sm border border-linea px-3.5 py-2 text-sm text-azul tabular-nums focus:border-aqua focus:outline-none" />
-                </div>
-            </div>
-
-            <div>
-                <label for="giro" class="mb-1 block text-sm font-medium text-azul">Giro comercial</label>
-                <input type="text" id="giro" name="giro" maxlength="255" required
-                       value="{{ old('giro', $empresa->giro ?? 'Comercialización de prendas de vestir y accesorios') }}"
-                       class="w-full rounded-marca-sm border border-linea px-3.5 py-2 text-sm text-azul focus:border-aqua focus:outline-none" />
-            </div>
-
-            <div class="grid gap-5 sm:grid-cols-2">
-                <div>
-                    <label for="propietario_contacto" class="mb-1 block text-sm font-medium text-azul">Propietario / Contacto</label>
-                    <input type="text" id="propietario_contacto" name="propietario_contacto" maxlength="150" required
-                           value="{{ old('propietario_contacto', $empresa->propietario_contacto) }}"
-                           class="w-full rounded-marca-sm border border-linea px-3.5 py-2 text-sm text-azul focus:border-aqua focus:outline-none" />
+                    <label for="tasa_impuesto" class="etiqueta">Tasa ISR</label>
+                    <div class="campo-unidad">
+                        <input type="number" id="tasa_impuesto" name="tasa_impuesto" step="0.01" min="0" max="100" required
+                               value="{{ old('tasa_impuesto', $empresa->tasa_impuesto ?? '30.00') }}"
+                               @error('tasa_impuesto') aria-invalid="true" aria-describedby="tasa_impuesto-error" @enderror
+                               class="campo tabular-nums" />
+                        <span>%</span>
+                    </div>
+                    @error('tasa_impuesto') <p id="tasa_impuesto-error" class="error-campo">{{ $message }}</p> @enderror
                 </div>
 
-                <div>
-                    <label for="telefono" class="mb-1 block text-sm font-medium text-azul">Teléfono</label>
-                    <input type="text" id="telefono" name="telefono" maxlength="20" required
-                           value="{{ old('telefono', $empresa->telefono) }}"
-                           class="w-full rounded-marca-sm border border-linea px-3.5 py-2 text-sm text-azul focus:border-aqua focus:outline-none" />
+                <div class="sm:col-span-2">
+                    <label for="giro" class="etiqueta">Giro comercial</label>
+                    <input type="text" id="giro" name="giro" maxlength="255" required
+                           value="{{ old('giro', $empresa->giro ?? 'Comercialización de prendas de vestir y accesorios') }}"
+                           @error('giro') aria-invalid="true" aria-describedby="giro-error" @enderror
+                           class="campo" />
+                    @error('giro') <p id="giro-error" class="error-campo">{{ $message }}</p> @enderror
                 </div>
-            </div>
 
-            <div class="flex justify-end gap-3 border-t border-linea pt-4">
-                <a href="{{ route('admin.index') }}"
-                   class="rounded-marca-sm border border-linea px-4 py-2 text-sm font-medium text-tinta-suave hover:text-azul">
+                <div class="border-t border-linea pt-6 sm:col-span-2 sm:grid sm:grid-cols-2 sm:gap-x-5">
+                    <div>
+                        <label for="propietario_contacto" class="etiqueta">Propietario o contacto</label>
+                        <input type="text" id="propietario_contacto" name="propietario_contacto" maxlength="150" required
+                               autocomplete="name"
+                               value="{{ old('propietario_contacto', $empresa->propietario_contacto) }}"
+                               @error('propietario_contacto') aria-invalid="true" aria-describedby="propietario_contacto-error" @enderror
+                               class="campo" />
+                        @error('propietario_contacto') <p id="propietario_contacto-error" class="error-campo">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="mt-6 sm:mt-0">
+                        <label for="telefono" class="etiqueta">Teléfono</label>
+                        <input type="text" id="telefono" name="telefono" maxlength="20" required
+                               inputmode="tel" autocomplete="tel"
+                               value="{{ old('telefono', $empresa->telefono) }}"
+                               @error('telefono') aria-invalid="true" aria-describedby="telefono-error" @enderror
+                               class="campo tabular-nums" />
+                        @error('telefono') <p id="telefono-error" class="error-campo">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="flex flex-col-reverse gap-3 rounded-b-marca-lg border-t border-linea bg-neutro/60 px-6 py-4 sm:flex-row sm:justify-end sm:px-8">
+                <a href="{{ route('admin.index') }}" class="btn btn-secundario">
                     Cancelar
                 </a>
-                <button type="submit"
-                        class="cursor-pointer rounded-marca-sm bg-azul px-5 py-2 text-sm font-medium text-blanco hover:bg-azul-700">
-                    Guardar Empresa
+                <button type="submit" class="btn btn-primario">
+                    <x-icono nombre="check" class="size-5" />
+                    Guardar empresa
                 </button>
             </div>
         </form>

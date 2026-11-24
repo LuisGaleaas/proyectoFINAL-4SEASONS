@@ -1,27 +1,27 @@
 @extends('layouts.app')
 
-@section('title', '4Seasons | Panel Administrativo')
+@section('title', '4Seasons | Panel administrativo')
 
 @section('content')
-    <div class="mx-auto max-w-6xl px-4 pt-6 pb-20 sm:px-6 lg:px-8">
-        {{-- Cabecera --}}
-        <div class="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-linea pb-6">
-            <div>
-                <p class="text-sm font-medium text-aqua-600">Administración del Sistema</p>
-                <h1 class="mt-1 text-3xl font-semibold tracking-[-0.02em] text-azul">
-                    Gestión de Datos y Auditoría
+    <div class="mx-auto max-w-6xl px-4 pt-6 pb-24 sm:px-6 lg:px-8">
+        
+        <div class="flex flex-wrap items-end justify-between gap-x-8 gap-y-5 border-b border-linea pb-8">
+            <div class="min-w-0">
+                <h1 class="text-3xl leading-tight font-semibold tracking-[-0.02em] text-azul sm:text-4xl">
+                    Gestión de datos y auditoría
                 </h1>
+                <p class="mt-2 text-[15px] text-tinta-suave">Administración del sistema</p>
             </div>
 
             <div class="flex flex-wrap items-center gap-3">
-                <a href="{{ route('dashboard') }}"
-                   class="inline-flex min-h-10 items-center rounded-marca-sm border border-azul/25 bg-blanco px-4 text-sm font-medium text-azul hover:border-azul">
-                    Ver Tablero
+                <a href="{{ route('dashboard') }}" class="btn btn-secundario">
+                    Ver tablero
+                    <x-icono nombre="flecha-der" class="size-4" />
                 </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit"
-                            class="inline-flex min-h-10 cursor-pointer items-center rounded-marca-sm border border-rose-300 bg-blanco px-4 text-sm font-medium text-rose-700 hover:bg-rose-50">
+                    <button type="submit" class="btn btn-fantasma hover:bg-peligro-100 hover:text-peligro">
+                        <x-icono nombre="salir" class="size-4" />
                         Cerrar sesión
                     </button>
                 </form>
@@ -29,108 +29,120 @@
         </div>
 
         @if (session('status'))
-            <div role="status" class="mb-6 rounded-marca-sm border border-aqua bg-aqua-100/80 px-4 py-3 text-sm font-medium text-azul-900">
-                {{ session('status') }}
+            <div role="status" class="aviso mt-6 bg-exito-100 font-medium text-exito">
+                <x-icono nombre="check" class="mt-0.5 size-5" />
+                <p>{{ session('status') }}</p>
             </div>
         @endif
 
-        {{-- Bloque 1: Empresa --}}
-        <section class="mb-10 rounded-marca border border-linea bg-blanco p-6 shadow-xs">
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-lg font-semibold text-azul">1. Configuración de la Empresa</h2>
-                    <p class="text-sm text-tinta-suave">Datos generales y tasa de Impuesto Sobre la Renta (ISR) aplicada a los cálculos FEDI.</p>
-                </div>
 
-                @if ($empresa)
-                    <a href="{{ route('admin.empresas.edit', $empresa) }}"
-                       class="inline-flex min-h-10 items-center rounded-marca-sm bg-azul px-4 text-sm font-medium text-blanco hover:bg-azul-700">
-                        Editar Empresa
-                    </a>
-                @else
-                    <a href="{{ route('admin.empresas.create') }}"
-                       class="inline-flex min-h-10 items-center rounded-marca-sm bg-aqua px-4 text-sm font-medium text-azul-900 hover:bg-aqua-600">
-                        + Registrar Empresa
-                    </a>
-                @endif
+        <section aria-labelledby="titulo-empresa" class="grid gap-6 border-b border-linea py-10 lg:grid-cols-12">
+            <div class="lg:col-span-4">
+                <h2 id="titulo-empresa" class="text-xl font-semibold text-azul">Configuración de la empresa</h2>
+                <p class="mt-2 text-[15px] leading-relaxed text-tinta-suave">
+                    Datos generales y tasa de Impuesto Sobre la Renta (ISR) aplicada a los cálculos FEDI.
+                </p>
+                <div class="mt-5">
+                    @if ($empresa)
+                        <a href="{{ route('admin.empresas.edit', $empresa) }}" class="btn btn-secundario">
+                            <x-icono nombre="lapiz" class="size-4" />
+                            Editar empresa
+                        </a>
+                    @else
+                        <a href="{{ route('admin.empresas.create') }}" class="btn btn-primario">
+                            <x-icono nombre="mas" class="size-5" />
+                            Registrar empresa
+                        </a>
+                    @endif
+                </div>
             </div>
 
-            @if ($empresa)
-                <dl class="mt-5 grid grid-cols-2 gap-4 border-t border-linea pt-4 text-sm sm:grid-cols-4">
-                    <div>
-                        <dt class="text-xs text-tinta-suave">Nombre</dt>
-                        <dd class="font-semibold text-azul">{{ $empresa->nombre }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs text-tinta-suave">Propietario / Contacto</dt>
-                        <dd class="font-medium text-azul">{{ $empresa->propietario_contacto }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs text-tinta-suave">Teléfono</dt>
-                        <dd class="font-medium text-azul">{{ $empresa->telefono }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs text-tinta-suave">Tasa ISR</dt>
-                        <dd class="font-semibold text-aqua-600 tabular-nums">{{ number_format((float) $empresa->tasa_impuesto, 2) }}%</dd>
-                    </div>
-                </dl>
-            @endif
+            <div class="min-w-0 lg:col-span-8">
+                @if ($empresa)
+                    <dl class="grid gap-px overflow-hidden rounded-marca border border-linea bg-linea sm:grid-cols-2">
+                        <div class="bg-blanco p-5">
+                            <dt class="text-sm text-tinta-suave">Nombre</dt>
+                            <dd class="mt-1 text-lg font-semibold text-azul">{{ $empresa->nombre }}</dd>
+                        </div>
+                        <div class="bg-blanco p-5">
+                            <dt class="text-sm text-tinta-suave">Tasa ISR</dt>
+                            <dd class="mt-1 text-lg font-semibold text-azul tabular-nums">{{ number_format((float) $empresa->tasa_impuesto, 2) }}%</dd>
+                        </div>
+                        <div class="bg-blanco p-5">
+                            <dt class="text-sm text-tinta-suave">Propietario o contacto</dt>
+                            <dd class="mt-1 font-medium text-azul">{{ $empresa->propietario_contacto }}</dd>
+                        </div>
+                        <div class="bg-blanco p-5">
+                            <dt class="text-sm text-tinta-suave">Teléfono</dt>
+                            <dd class="mt-1 font-medium text-azul tabular-nums">{{ $empresa->telefono }}</dd>
+                        </div>
+                    </dl>
+                @else
+                    <p class="rounded-marca border border-dashed border-azul/30 p-6 text-[15px] text-tinta-suave">
+                        Todavía no hay una empresa registrada.
+                    </p>
+                @endif
+            </div>
         </section>
 
-        {{-- Bloque 2: Alternativas de Inversión --}}
-        <section class="rounded-marca border border-linea bg-blanco p-6 shadow-xs">
-            <div class="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-lg font-semibold text-azul">2. Alternativas de Inversión</h2>
-                    <p class="text-sm text-tinta-suave">
+
+        <section aria-labelledby="titulo-alternativas" class="pt-10">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <div class="max-w-2xl">
+                    <h2 id="titulo-alternativas" class="text-xl font-semibold text-azul">Alternativas de inversión</h2>
+                    <p class="mt-2 text-[15px] leading-relaxed text-tinta-suave">
                         Gestiona parámetros financieros, desglose de costos por concepto, fuentes de datos clave y evidencias ({{ $totalEvidencias }} archivos en total).
                     </p>
                 </div>
 
-                <a href="{{ route('admin.alternativas.create') }}"
-                   class="inline-flex min-h-10 items-center rounded-marca-sm bg-aqua px-4 text-sm font-medium text-azul-900 hover:bg-aqua-600">
-                    + Nueva Alternativa
+                <a href="{{ route('admin.alternativas.create') }}" class="btn btn-primario">
+                    <x-icono nombre="mas" class="size-5" />
+                    Nueva alternativa
                 </a>
             </div>
 
-            <div class="mt-6 overflow-x-auto rounded-marca-sm border border-linea">
-                <table class="w-full border-collapse text-left text-sm">
-                    <thead class="bg-azul text-blanco">
+            <div class="mt-6 overflow-x-auto rounded-marca border border-linea bg-blanco">
+                <table class="w-full min-w-[56rem] border-collapse text-left text-[15px]">
+                    <thead class="border-b border-linea text-sm text-tinta-suave">
                         <tr>
-                            <th class="px-4 py-3 font-medium">Alternativa</th>
-                            <th class="px-4 py-3 text-right font-medium">Inversión</th>
-                            <th class="px-4 py-3 text-right font-medium">Ingreso/Ahorro</th>
-                            <th class="px-4 py-3 text-right font-medium">Costo Anual</th>
-                            <th class="px-4 py-3 text-center font-medium">Vida / TMAR</th>
-                            <th class="px-4 py-3 text-center font-medium">Auditoría</th>
-                            <th class="px-4 py-3 text-right font-medium">Acciones</th>
+                            <th scope="col" class="px-5 py-3.5 font-medium">Alternativa</th>
+                            <th scope="col" class="px-5 py-3.5 text-right font-medium">Inversión</th>
+                            <th scope="col" class="px-5 py-3.5 text-right font-medium">Ingreso o ahorro</th>
+                            <th scope="col" class="px-5 py-3.5 text-right font-medium">Costo anual</th>
+                            <th scope="col" class="px-5 py-3.5 text-right font-medium">Vida útil</th>
+                            <th scope="col" class="px-5 py-3.5 text-right font-medium">TMAR</th>
+                            <th scope="col" class="px-5 py-3.5 font-medium">Auditoría</th>
+                            <th scope="col" class="px-5 py-3.5 text-right font-medium"><span class="sr-only">Acciones</span></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-linea">
                         @forelse ($alternativas as $alt)
-                            <tr class="even:bg-neutro/40">
-                                <td class="px-4 py-3 font-semibold text-azul">{{ $alt->nombre }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums">${{ number_format((float) $alt->inversion_inicial, 2) }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums">${{ number_format((float) $alt->ingreso_anual, 2) }}</td>
-                                <td class="px-4 py-3 text-right tabular-nums">${{ number_format((float) $alt->costo_operativo_anual, 2) }}</td>
-                                <td class="px-4 py-3 text-center tabular-nums">
-                                    {{ $alt->vida_util_anios }} años · {{ number_format((float) $alt->tasa_tmar, 2) }}%
+                            <tr class="align-top transition-[background-color] duration-150 hover:bg-neutro/60">
+                                <th scope="row" class="px-5 py-4 font-semibold text-azul">{{ $alt->nombre }}</th>
+                                <td class="px-5 py-4 text-right tabular-nums">${{ number_format((float) $alt->inversion_inicial, 2) }}</td>
+                                <td class="px-5 py-4 text-right tabular-nums">${{ number_format((float) $alt->ingreso_anual, 2) }}</td>
+                                <td class="px-5 py-4 text-right tabular-nums">${{ number_format((float) $alt->costo_operativo_anual, 2) }}</td>
+                                <td class="px-5 py-4 text-right tabular-nums">{{ $alt->vida_util_anios }} años</td>
+                                <td class="px-5 py-4 text-right tabular-nums">{{ number_format((float) $alt->tasa_tmar, 2) }}%</td>
+                                <td class="px-5 py-4 text-sm text-tinta-suave">
+                                    <ul class="space-y-0.5 tabular-nums">
+                                        <li>{{ $alt->costos_count }} costos</li>
+                                        <li>{{ $alt->fuentes_datos_count }} fuentes</li>
+                                        <li>{{ $alt->evidencias_count }} archivos</li>
+                                    </ul>
                                 </td>
-                                <td class="px-4 py-3 text-center text-xs text-tinta-suave">
-                                    {{ $alt->costos_count }} costos · {{ $alt->fuentes_datos_count }} fuentes · {{ $alt->evidencias_count }} archivos
-                                </td>
-                                <td class="px-4 py-3 text-right">
-                                    <div class="inline-flex items-center gap-2">
-                                        <a href="{{ route('admin.alternativas.edit', $alt) }}"
-                                           class="rounded-marca-sm border border-azul/30 px-3 py-1.5 text-xs font-medium text-azul hover:border-azul hover:bg-azul hover:text-blanco">
+                                <td class="px-5 py-4">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ route('admin.alternativas.edit', $alt) }}" class="btn btn-secundario btn-chico">
+                                            <x-icono nombre="lapiz" class="size-4" />
                                             Editar
                                         </a>
                                         <form method="POST" action="{{ route('admin.alternativas.destroy', $alt) }}"
                                               onsubmit="return confirm('¿Eliminar esta alternativa y todos sus costos, fuentes y evidencias?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit"
-                                                    class="cursor-pointer rounded-marca-sm border border-rose-200 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50">
+                                            <button type="submit" class="btn btn-peligro btn-chico">
+                                                <x-icono nombre="basura" class="size-4" />
                                                 Eliminar
                                             </button>
                                         </form>
@@ -139,8 +151,12 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-4 py-6 text-center text-tinta-suave">
-                                    No hay alternativas de inversión registradas todavía.
+                                <td colspan="8" class="px-5 py-12 text-center">
+                                    <p class="text-tinta-suave">No hay alternativas de inversión registradas todavía.</p>
+                                    <a href="{{ route('admin.alternativas.create') }}" class="btn btn-secundario mt-4">
+                                        <x-icono nombre="mas" class="size-4" />
+                                        Nueva alternativa
+                                    </a>
                                 </td>
                             </tr>
                         @endforelse
