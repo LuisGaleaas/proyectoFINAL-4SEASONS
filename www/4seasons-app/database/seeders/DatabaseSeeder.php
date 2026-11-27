@@ -20,5 +20,10 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
             'password' => bcrypt('admin123')
         ]);
+
+        $this->call([
+            CuentaSeeder::class,
+            PartidaSeeder::class,
+        ]);
     }
 }
