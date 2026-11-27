@@ -51,6 +51,40 @@
                             Metodología
                         </a>
                     </li>
+                    <li>
+                        <details data-menu class="group relative">
+                            <summary class="-my-1 flex cursor-pointer list-none items-center gap-1.5 rounded-sm py-1 text-tinta-suave transition-[color,background-color,border-color,text-decoration-color] duration-200 hover:text-azul group-open:text-azul [&::-webkit-details-marker]:hidden">
+                                Contabilidad
+                                <svg class="h-4 w-4 transition-transform duration-200 group-open:rotate-180"
+                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2" d="m19 9-7 7-7-7"/>
+                                </svg>
+                            </summary>
+
+                            <ul class="absolute top-full left-0 z-20 mt-2 w-56 rounded-marca-sm border border-linea bg-blanco p-2 text-[15px] shadow-lg shadow-azul/10">
+                                <li>
+                                    <a href="#"
+                                    class="block rounded-sm px-3 py-2 text-tinta-suave transition-[color,background-color] duration-200 hover:bg-aqua-100 hover:text-azul">
+                                        Registro de partidas
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#"
+                                    class="block rounded-sm px-3 py-2 text-tinta-suave transition-[color,background-color] duration-200 hover:bg-aqua-100 hover:text-azul">
+                                        Cuentas T
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="#"
+                                    class="block rounded-sm px-3 py-2 text-tinta-suave transition-[color,background-color] duration-200 hover:bg-aqua-100 hover:text-azul">
+                                        Estados Financieros
+                                    </a>
+                                </li>
+                            </ul>
+                        </details>
+                    </li>
                 </ul>
 
                 <a href="{{ url('/admin') }}"
