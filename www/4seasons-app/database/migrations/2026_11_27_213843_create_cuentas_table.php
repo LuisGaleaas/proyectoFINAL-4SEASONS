@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\TipoCuenta;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,14 +17,7 @@ return new class extends Migration
             $table->string('cuenta', 150);
             $table->string('codigo', 50);
             $table->decimal('saldo', 14, 2)->default(0);
-            $table->enum('tipocuenta', [
-                'Activo',
-                'Pasivo',
-                'Patrimonio',
-                'Ingresos',
-                'Costos',
-                'Gastos',
-            ]);
+            $table->enum('tipocuenta', TipoCuenta::valores());
             $table->enum('tiposaldo', [
                 'Deudor',
                 'Acreedor'

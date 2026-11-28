@@ -13,12 +13,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [EvaluacionController::class, 'inicio'])->name('inicio');
 Route::get('/dashboard', [EvaluacionController::class, 'dashboard'])->name('dashboard');
 
-// Autenticación administrativa (equivalente a /admin/login/)
+// Autenticación administrativa
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Panel Administrativo protegido (equivalente a django.contrib.admin)
+// Panel Administrativo protegido
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('index');
 
@@ -28,7 +28,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/empresas/{empresa}/edit', [EmpresaController::class, 'edit'])->name('empresas.edit');
     Route::put('/empresas/{empresa}', [EmpresaController::class, 'update'])->name('empresas.update');
 
-    // Alternativas de Inversión + Inlines de Costos y Fuentes
+    // Alternativas de Inversión
     Route::get('/alternativas/create', [AlternativaInversionController::class, 'create'])->name('alternativas.create');
     Route::post('/alternativas', [AlternativaInversionController::class, 'store'])->name('alternativas.store');
     Route::get('/alternativas/{alternativa}/edit', [AlternativaInversionController::class, 'edit'])->name('alternativas.edit');
@@ -39,7 +39,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/alternativas/{alternativa}/evidencias', [EvidenciaDocumentalController::class, 'store'])->name('evidencias.store');
     Route::delete('/evidencias/{evidencia}', [EvidenciaDocumentalController::class, 'destroy'])->name('evidencias.destroy');
 
-    // Contabilidad: Cuentas T
+    //Cuentas T
     Route::get('/cuentas', [CuentaController::class, 'index'])->name('cuentas.index');
     Route::get('/cuentas/create', [CuentaController::class, 'create'])->name('cuentas.create');
     Route::post('/cuentas', [CuentaController::class, 'store'])->name('cuentas.store');

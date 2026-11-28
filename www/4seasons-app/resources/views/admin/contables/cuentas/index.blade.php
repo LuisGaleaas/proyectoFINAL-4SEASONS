@@ -56,8 +56,8 @@
                         <tr class="align-top transition-[background-color] duration-150 hover:bg-neutro/60">
                             <td class="px-5 py-4 tabular-nums text-tinta-suave">{{ $cuenta->codigo }}</td>
                             <th scope="row" class="px-5 py-4 font-semibold text-azul">{{ $cuenta->cuenta }}</th>
-                            <td class="px-5 py-4">
-                                <span class="inline-flex rounded-full bg-azul-100/60 px-2.5 py-0.5 text-sm text-azul">{{ $cuenta->tipocuenta }}</span>
+                            <td class="px-5 py-4 text-tinta-suave">
+                                {{ $cuenta->tipocuenta->value }}
                             </td>
                             <td class="px-5 py-4 text-tinta-suave">{{ $cuenta->tiposaldo }}</td>
                             <td class="px-5 py-4 text-right tabular-nums">${{ number_format((float) $cuenta->saldo, 2) }}</td>

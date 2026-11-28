@@ -78,9 +78,10 @@
                         <select id="tipocuenta" name="tipocuenta" required
                                 @error('tipocuenta') aria-invalid="true" aria-describedby="tipocuenta-error" @enderror
                                 class="campo">
-                            <option value="" disabled @selected(! old('tipocuenta', $cuenta->tipocuenta))>Selecciona un tipo</option>
-                            @foreach (\App\Models\Cuenta::TIPOS_CUENTA as $tipo)
-                                <option value="{{ $tipo }}" @selected(old('tipocuenta', $cuenta->tipocuenta) === $tipo)>{{ $tipo }}</option>
+                            @php($tipoActual = old('tipocuenta', $cuenta->tipocuenta?->value))
+                            <option value="" disabled @selected(! $tipoActual)>Selecciona un tipo</option>
+                            @foreach (\App\Enums\TipoCuenta::cases() as $tipo)
+                                <option value="{{ $tipo->value }}" @selected($tipoActual === $tipo->value)>{{ $tipo->value }}</option>
                             @endforeach
                         </select>
                         @error('tipocuenta') <p id="tipocuenta-error" class="error-campo">{{ $message }}</p> @enderror
@@ -97,7 +98,7 @@
                                 <option value="{{ $tipo }}" @selected(old('tiposaldo', $cuenta->tiposaldo) === $tipo)>{{ $tipo }}</option>
                             @endforeach
                         </select>
-                        <p id="tiposaldo-ayuda" class="ayuda">Activo, Costos y Gastos suelen ser deudoras; Pasivo, Patrimonio e Ingresos, acreedoras.</p>
+                        <p id="tiposaldo-ayuda" class="ayuda">Activos, Costos y Gastos suelen ser deudoras; Pasivos, Patrimonio e Ingresos, acreedoras.</p>
                         @error('tiposaldo') <p id="tiposaldo-error" class="error-campo">{{ $message }}</p> @enderror
                     </div>
                 </div>

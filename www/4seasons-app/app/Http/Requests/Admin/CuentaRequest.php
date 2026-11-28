@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\TipoCuenta;
 use App\Models\Cuenta;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -23,7 +24,7 @@ class CuentaRequest extends FormRequest
                 Rule::unique('cuentas', 'codigo')->ignore($cuenta?->id),
             ],
             'cuenta' => ['required', 'string', 'max:150'],
-            'tipocuenta' => ['required', Rule::in(Cuenta::TIPOS_CUENTA)],
+            'tipocuenta' => ['required', Rule::enum(TipoCuenta::class)],
             'tiposaldo' => ['required', Rule::in(Cuenta::TIPOS_SALDO)],
             'saldo' => ['required', 'numeric', 'min:0', 'max:999999999999.99'],
         ];
