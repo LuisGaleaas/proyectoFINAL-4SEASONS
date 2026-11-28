@@ -71,8 +71,9 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#"
-                                    class="block rounded-sm px-3 py-2 text-tinta-suave transition-[color,background-color] duration-200 hover:bg-aqua-100 hover:text-azul">
+                                    <a href="{{ route('admin.cuentas.index') }}"
+                                    @if (request()->routeIs('admin.cuentas.*')) aria-current="page" @endif
+                                    class="block rounded-sm px-3 py-2 text-tinta-suave transition-[color,background-color] duration-200 hover:bg-aqua-100 hover:text-azul aria-[current=page]:font-medium aria-[current=page]:text-azul">
                                         Cuentas T
                                     </a>
                                 </li>

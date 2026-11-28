@@ -9,10 +9,15 @@ class Cuenta extends Model
 {
     protected $table = 'cuentas';
 
+    public const TIPOS_CUENTA = ['Activo', 'Pasivo', 'Patrimonio', 'Ingresos', 'Costos', 'Gastos'];
+
+    public const TIPOS_SALDO = ['Deudor', 'Acreedor'];
+
     protected $fillable = [
         'cuentas_id',
         'cuenta',
         'codigo',
+        'saldo',
         'tipocuenta',
         'tiposaldo',
     ];
