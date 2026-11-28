@@ -50,4 +50,5 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/partidas', [PartidaController::class, 'index'])->name('partidas.index');
     Route::get('/partidas/create', [PartidaController::class, 'create'])->name('partidas.create');
     Route::post('/partidas', [PartidaController::class, 'store'])->name('partidas.store');
+    Route::delete('/partidas/{partida}', [PartidaController::class, 'destroy'])->name('partidas.destroy');
 });

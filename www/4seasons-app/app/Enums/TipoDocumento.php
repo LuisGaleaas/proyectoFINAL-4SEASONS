@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-/**
- * Tipos de documento que respaldan una partida contable.
- */
+
 enum TipoDocumento: string
 {
     case Factura = 'Factura';
@@ -15,9 +13,6 @@ enum TipoDocumento: string
     case Cheque = 'Cheque';
     case Otro = 'Otro';
 
-    /**
-     * @return array<int, string>
-     */
     public static function valores(): array
     {
         return array_column(self::cases(), 'value');

@@ -14,7 +14,13 @@ class PartidaController extends Controller
 {
     public function index(): View
     {
-        return view('admin.contables.partidas.index');
+        $partidas = Partida::with(['detalles.cuenta', 'usuario'])->orderBy('asiento')->orderBy('fecha')->get();
+
+        return view('admin.contables.partidas.index', [
+            'partidas' => $partidas,
+            'totalCargos' => $partidas->sum('total_cargo'),
+            'totalAbonos' => $partidas->sum('total_abono'),
+        ]);
     }
 
     public function create(): View|RedirectResponse
@@ -22,9 +28,7 @@ class PartidaController extends Controller
         $cuentas = Cuenta::orderBy('codigo')->get(['id', 'codigo', 'cuenta']);
 
         if ($cuentas->isEmpty()) {
-            return redirect()
-                ->route('admin.cuentas.create')
-                ->with('status', 'Primero registra al menos una cuenta antes de crear partidas.');
+            return redirect()->route('admin.cuentas.create')->with('status', 'Primero registra al menos una cuenta antes de crear partidas.');
         }
 
         return view('admin.contables.partidas.form', [
@@ -55,8 +59,16 @@ class PartidaController extends Controller
             return $partida;
         });
 
-        return redirect()
-            ->route('admin.partidas.index')
-            ->with('status', "Partida #{$partida->asiento} registrada correctamente.");
+        return redirect()->route('admin.partidas.index')->with('status', "Partida #{$partida->asiento} registrada correctamente.");
+    }
+
+    public function destroy(Partida $partida): RedirectResponse
+    {
+        DB::transaction(function () use ($partida) {
+            $partida->detalles()->delete();
+            $partida->delete();
+        });
+
+        return redirect()->route('admin.partidas.index')->with('status', "Partida #{$partida->asiento} eliminada.");
     }
 }

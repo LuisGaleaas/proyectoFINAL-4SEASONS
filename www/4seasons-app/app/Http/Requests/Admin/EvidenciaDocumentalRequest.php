@@ -18,7 +18,7 @@ class EvidenciaDocumentalRequest extends FormRequest
         return [
             'tipo' => ['required', 'string', Rule::in(array_keys(EvidenciaDocumental::TIPO_CHOICES))],
             'descripcion' => ['required', 'string', 'max:255'],
-            'archivo' => ['required', 'file', 'max:10240'], // Hasta 10 MB
+            'archivo' => ['required', 'file', 'max:10240'], 
         ];
     }
 }

@@ -163,7 +163,7 @@
             const totalAbono = document.getElementById("total-abono");
             const estado = document.getElementById("estado-cuadre");
             const formato = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-            
+
             let siguienteIdx = tbody.rows.length;
 
             function centavos(input) {
@@ -201,8 +201,7 @@
             tbody.addEventListener("input", function (e) {
                 const tipo = e.target.dataset.monto;
                 if (!tipo) return;
-
-                // Un movimiento es cargo o abono: al escribir en uno se limpia el otro.
+                
                 if (e.target.value !== "" && parseFloat(e.target.value) > 0) {
                     const otro = e.target.closest("tr").querySelector(`[data-monto=${tipo === "cargo" ? "abono" : "cargo"}]`);
                     otro.value = "";
