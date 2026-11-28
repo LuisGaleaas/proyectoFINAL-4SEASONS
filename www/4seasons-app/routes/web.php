@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AlternativaInversionController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\CuentaController;
 use App\Http\Controllers\Admin\EmpresaController;
 use App\Http\Controllers\Admin\EvidenciaDocumentalController;
 use App\Http\Controllers\EvaluacionController;
@@ -37,4 +38,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Evidencias Documentales
     Route::post('/alternativas/{alternativa}/evidencias', [EvidenciaDocumentalController::class, 'store'])->name('evidencias.store');
     Route::delete('/evidencias/{evidencia}', [EvidenciaDocumentalController::class, 'destroy'])->name('evidencias.destroy');
+
+    // Contabilidad: Cuentas T
+    Route::get('/cuentas', [CuentaController::class, 'index'])->name('cuentas.index');
+    Route::get('/cuentas/create', [CuentaController::class, 'create'])->name('cuentas.create');
+    Route::post('/cuentas', [CuentaController::class, 'store'])->name('cuentas.store');
+    Route::delete('/cuentas/{cuenta}', [CuentaController::class, 'destroy'])->name('cuentas.destroy');
 });

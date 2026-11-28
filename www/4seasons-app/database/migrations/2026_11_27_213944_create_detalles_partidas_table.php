@@ -13,13 +13,10 @@ return new class extends Migration
     {
         Schema::create('detalles_partidas', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('partida_id');
-            $table->unsignedInteger('cuenta_id');
+            $table->foreignId('partida_id')->constrained('partidas')->cascadeOnDelete();
+            $table->foreignId('cuenta_id')->constrained('cuentas');
             $table->decimal('cargo', 14, 2)->default(0);
             $table->decimal('abono', 14, 2)->default(0);
-
-            $table->foreign('partida_id')->references('partida_id')->on('partidas')->cascadeOnDelete();
-            $table->foreign('cuenta_id')->references('cuenta_id')->on('cuentas');
             $table->timestamps();
         });
     }
