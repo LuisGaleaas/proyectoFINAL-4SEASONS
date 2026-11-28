@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CuentaController;
 use App\Http\Controllers\Admin\EmpresaController;
 use App\Http\Controllers\Admin\EvidenciaDocumentalController;
+use App\Http\Controllers\Admin\PartidaController;
 use App\Http\Controllers\EvaluacionController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,4 +45,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/cuentas/create', [CuentaController::class, 'create'])->name('cuentas.create');
     Route::post('/cuentas', [CuentaController::class, 'store'])->name('cuentas.store');
     Route::delete('/cuentas/{cuenta}', [CuentaController::class, 'destroy'])->name('cuentas.destroy');
+
+    //Registro de partidas
+    Route::get('/partidas', [PartidaController::class, 'index'])->name('partidas.index');
+    Route::get('/partidas/create', [PartidaController::class, 'create'])->name('partidas.create');
+    Route::post('/partidas', [PartidaController::class, 'store'])->name('partidas.store');
 });

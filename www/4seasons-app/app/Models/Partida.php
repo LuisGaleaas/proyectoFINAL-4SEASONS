@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TipoDocumento;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,7 @@ class Partida extends Model
         return [
             'fecha' => 'date',
             'asiento' => 'integer',
+            'tipodocumento' => TipoDocumento::class,
         ];
     }
 

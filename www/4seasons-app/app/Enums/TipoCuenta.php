@@ -16,11 +16,6 @@ enum TipoCuenta: string
     case Costos = 'Costos';
     case Gastos = 'Gastos';
 
-    /**
-     * Todos los valores, p. ej. para la columna enum de la migración.
-     *
-     * @return array<int, string>
-     */
     public static function valores(): array
     {
         return array_column(self::cases(), 'value');

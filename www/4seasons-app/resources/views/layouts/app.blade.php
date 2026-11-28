@@ -65,8 +65,9 @@
 
                             <ul class="absolute top-full left-0 z-20 mt-2 w-56 rounded-marca-sm border border-linea bg-blanco p-2 text-[15px] shadow-lg shadow-azul/10">
                                 <li>
-                                    <a href="#"
-                                    class="block rounded-sm px-3 py-2 text-tinta-suave transition-[color,background-color] duration-200 hover:bg-aqua-100 hover:text-azul">
+                                    <a href="{{ route('admin.partidas.index') }}"
+                                    @if (request()->routeIs('admin.partidas.*')) aria-current="page" @endif
+                                    class="block rounded-sm px-3 py-2 text-tinta-suave transition-[color,background-color] duration-200 hover:bg-aqua-100 hover:text-azul aria-[current=page]:font-medium aria-[current=page]:text-azul">
                                         Registro de partidas
                                     </a>
                                 </li>
