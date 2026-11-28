@@ -93,10 +93,116 @@ class CalculoFinancieroService
     }
 
     /**
+     * Normaliza una colección/arreglo de varianzas anuales indexándolas por año (1..$vidaUtil).
+     * Los años faltantes se inicializan en 0.0 ("Sin varianza").
+     *
+     * @return array<int, array{varianza_ingreso_pct: float, varianza_costo_pct: float}>
+     */
+    public function normalizarVarianzas(iterable $varianzas, int $vidaUtil): array
+    {
+        $mapa = [];
+        for ($anio = 1; $anio <= $vidaUtil; $anio++) {
+            $mapa[$anio] = [
+                'varianza_ingreso_pct' => 0.0,
+                'varianza_costo_pct' => 0.0,
+            ];
+        }
+
+        foreach ($varianzas as $clave => $item) {
+            if (is_object($item)) {
+                $anio = isset($item->anio) ? (int) $item->anio : (int) $clave;
+                $varIng = (float) ($item->varianza_ingreso_pct ?? 0.0);
+                $varCost = (float) ($item->varianza_costo_pct ?? 0.0);
+            } elseif (is_array($item)) {
+                $anio = isset($item['anio']) ? (int) $item['anio'] : (int) $clave;
+                $varIng = (float) ($item['varianza_ingreso_pct'] ?? 0.0);
+                $varCost = (float) ($item['varianza_costo_pct'] ?? 0.0);
+            } else {
+                continue;
+            }
+
+            if ($anio >= 1 && $anio <= $vidaUtil) {
+                $mapa[$anio] = [
+                    'varianza_ingreso_pct' => max(-100.0, $varIng),
+                    'varianza_costo_pct' => max(-100.0, $varCost),
+                ];
+            }
+        }
+
+        return $mapa;
+    }
+
+    /**
+     * Construye los flujos netos antes de impuestos (Año 0..n) aplicando varianzas por año.
+     *
+     * @return array<int, array{anio: int, ingreso: float, costo: float, monto: float, varianza_ingreso_pct: float, varianza_costo_pct: float}>
+     */
+    public function flujosNetosTimeline(
+        float|string $ingresoAnual,
+        float|string $costoAnual,
+        float|string $inversionInicial,
+        float|string $salvamento,
+        int|string $vidaUtil,
+        iterable $varianzas = []
+    ): array {
+        if (
+            !is_numeric($ingresoAnual) ||
+            !is_numeric($costoAnual) ||
+            !is_numeric($inversionInicial) ||
+            !is_numeric($salvamento) ||
+            !is_numeric($vidaUtil)
+        ) {
+            return [];
+        }
+
+        $ingresoBase = (float) $ingresoAnual;
+        $costoBase = (float) $costoAnual;
+        $p = (float) $inversionInicial;
+        $f = (float) $salvamento;
+        $n = (int) $vidaUtil;
+
+        if ($n < 1) {
+            return [];
+        }
+
+        $varianzasMap = $this->normalizarVarianzas($varianzas, $n);
+        $timeline = [
+            [
+                'anio' => 0,
+                'ingreso' => 0.0,
+                'costo' => round($p, 2),
+                'monto' => round(-$p, 2),
+                'varianza_ingreso_pct' => 0.0,
+                'varianza_costo_pct' => 0.0,
+            ],
+        ];
+
+        for ($anio = 1; $anio <= $n; $anio++) {
+            $varIng = $varianzasMap[$anio]['varianza_ingreso_pct'];
+            $varCost = $varianzasMap[$anio]['varianza_costo_pct'];
+
+            $ingresoT = $ingresoBase * (1.0 + ($varIng / 100.0));
+            $costoT = $costoBase * (1.0 + ($varCost / 100.0));
+            $monto = ($ingresoT - $costoT) + ($anio === $n ? $f : 0.0);
+
+            $timeline[] = [
+                'anio' => $anio,
+                'ingreso' => round($ingresoT, 2),
+                'costo' => round($costoT, 2),
+                'monto' => round($monto, 2),
+                'varianza_ingreso_pct' => round($varIng, 2),
+                'varianza_costo_pct' => round($varCost, 2),
+            ];
+        }
+
+        return $timeline;
+    }
+
+    /**
      * Construye los Flujos Netos de Efectivo Después de Impuestos (FEDI) año con año.
-     * Utilidad Antes de Impuestos = Ingresos - Costos - Depreciación
+     * Utilidad Antes de Impuestos = Ingresos_t - Costos_t - Depreciación_t
      * Impuesto = UAI * t
-     * FEDI = Ingresos - Costos - Impuesto
+     * FEDI = Ingresos_t - Costos_t - Impuesto
      * Año 0: - Inversión Inicial
      * Año n: Incorpora el Valor de Salvamento
      *
@@ -108,7 +214,8 @@ class CalculoFinancieroService
         float|string $inversionInicial,
         float|string $salvamento,
         int|string $vidaUtil,
-        float|string $tasaImpuesto = 30.0
+        float|string $tasaImpuesto = 30.0,
+        iterable $varianzas = []
     ): array {
         if (
             !is_numeric($ingresoAnual) ||
@@ -132,14 +239,18 @@ class CalculoFinancieroService
             return [];
         }
 
+        $varianzasMap = $this->normalizarVarianzas($varianzas, $n);
         $flujos = [-$p];
         $tablaDep = $this->depreciacionLineaRecta($p, $f, $n);
 
         for ($anio = 1; $anio <= $n; $anio++) {
+            $ingresoT = $ingreso * (1.0 + ($varianzasMap[$anio]['varianza_ingreso_pct'] / 100.0));
+            $costoT = $costo * (1.0 + ($varianzasMap[$anio]['varianza_costo_pct'] / 100.0));
+
             $dep = isset($tablaDep[$anio - 1]) ? $tablaDep[$anio - 1]['cuota'] : 0.0;
-            $uai = $ingreso - $costo - $dep;
+            $uai = $ingresoT - $costoT - $dep;
             $impuesto = max(0.0, $uai * $t);
-            $fedi = ($ingreso - $costo) - $impuesto;
+            $fedi = ($ingresoT - $costoT) - $impuesto;
 
             // Al final de la vida útil se recupera el valor de rescate
             if ($anio === $n) {
@@ -153,15 +264,17 @@ class CalculoFinancieroService
     }
 
     /**
-     * Cálculo del Costo Anual Uniforme Equivalente (CAUE) blindado contra desbordamiento numérico.
-     * CAUE = P*(A/P, i, n) + A - F*(A/F, i, n)
+     * Cálculo del Costo Anual Uniforme Equivalente (CAUE) con soporte para flujos irregulares.
+     * CAUE = [ P + Sum_{t=1..n}(C_t / (1 + i)^t) - F / (1 + i)^n ] * (A/P, i, n)
+     * Cuando todas las varianzas son 0, equivale exactamente a P*(A/P, i, n) + A - F*(A/F, i, n).
      */
     public function calcularCaue(
         float|string $inversionInicial,
         float|string $costoAnual,
         float|string $valorSalvamento,
         float|string $tasaInteres,
-        int|string $vidaUtil
+        int|string $vidaUtil,
+        iterable $varianzas = []
     ): float {
         if (
             !is_numeric($inversionInicial) ||
@@ -184,8 +297,15 @@ class CalculoFinancieroService
             return 0.0;
         }
 
+        $varianzasMap = $this->normalizarVarianzas($varianzas, $n);
+
         if ($i === 0.0) {
-            return round(($p - $f) / $n + $a, 2);
+            $sumaCostos = 0.0;
+            for ($t = 1; $t <= $n; $t++) {
+                $sumaCostos += $a * (1.0 + ($varianzasMap[$t]['varianza_costo_pct'] / 100.0));
+            }
+
+            return round(($p + $sumaCostos - $f) / $n, 2);
         }
 
         $potencia = (1.0 + $i) ** $n;
@@ -198,9 +318,15 @@ class CalculoFinancieroService
             return round($a, 2);
         }
 
+        $vpCostosAnuales = 0.0;
+        for ($t = 1; $t <= $n; $t++) {
+            $costoT = $a * (1.0 + ($varianzasMap[$t]['varianza_costo_pct'] / 100.0));
+            $vpCostosAnuales += $costoT / ((1.0 + $i) ** $t);
+        }
+
+        $vpTotalCostos = $p + $vpCostosAnuales - ($f / $potencia);
         $factorAP = ($i * $potencia) / $denominador;
-        $factorAF = $i / $denominador;
-        $caue = ($p * $factorAP) + $a - ($f * $factorAF);
+        $caue = $vpTotalCostos * $factorAP;
 
         return is_finite($caue) ? round($caue, 2) : 0.0;
     }
@@ -299,8 +425,8 @@ class CalculoFinancieroService
     }
 
     /**
-     * Relación Beneficio / Costo (B/C):
-     * B/C = VP(Beneficios) / VP(Costos e Inversión)
+     * Relación Beneficio / Costo (B/C) con soporte para flujos irregulares:
+     * B/C = [ Sum_{t=1..n}(I_t / (1 + i)^t) + F / (1 + i)^n ] / [ P + Sum_{t=1..n}(C_t / (1 + i)^t) ]
      */
     public function calcularBeneficioCosto(
         float|string $inversionInicial,
@@ -308,7 +434,8 @@ class CalculoFinancieroService
         float|string $costosAnuales,
         float|string $salvamento,
         float|string $tasaInteres,
-        int|string $vidaUtil
+        int|string $vidaUtil,
+        iterable $varianzas = []
     ): float {
         if (
             !is_numeric($inversionInicial) ||
@@ -328,7 +455,7 @@ class CalculoFinancieroService
         $i = (float) $tasaInteres / 100.0;
         $n = (int) $vidaUtil;
 
-        if ($n < 1 || $i <= 0.0 || ($p === 0.0 && $c === 0.0)) {
+        if ($n < 1 || $i <= 0.0) {
             return 0.0;
         }
 
@@ -337,13 +464,27 @@ class CalculoFinancieroService
             return 0.0;
         }
 
-        $pA = ($potencia - 1.0) / ($i * $potencia);
-        $pF = 1.0 / $potencia;
+        $varianzasMap = $this->normalizarVarianzas($varianzas, $n);
+        $vpIngresos = 0.0;
+        $vpCostosOp = 0.0;
 
-        $vpBeneficios = ($b * $pA) + ($f * $pF);
-        $vpCostos = $p + ($c * $pA);
+        for ($t = 1; $t <= $n; $t++) {
+            $divisor = (1.0 + $i) ** $t;
+            if (!is_finite($divisor) || $divisor === 0.0) {
+                return 0.0;
+            }
 
-        if ($vpCostos === 0.0) {
+            $ingresoT = $b * (1.0 + ($varianzasMap[$t]['varianza_ingreso_pct'] / 100.0));
+            $costoT = $c * (1.0 + ($varianzasMap[$t]['varianza_costo_pct'] / 100.0));
+
+            $vpIngresos += $ingresoT / $divisor;
+            $vpCostosOp += $costoT / $divisor;
+        }
+
+        $vpBeneficios = $vpIngresos + ($f / $potencia);
+        $vpCostos = $p + $vpCostosOp;
+
+        if ($vpCostos <= 0.0) {
             return 0.0;
         }
 

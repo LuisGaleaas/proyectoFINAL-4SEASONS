@@ -66,6 +66,11 @@ class AlternativaInversion extends Model
         return $this->hasMany(FuenteDato::class, 'alternativa_id');
     }
 
+    public function varianzasAnuales(): HasMany
+    {
+        return $this->hasMany(VarianzaAnual::class, 'alternativa_id')->orderBy('anio');
+    }
+
     /**
      * Equivalente a @property total_costos_detallados en Django.
      */

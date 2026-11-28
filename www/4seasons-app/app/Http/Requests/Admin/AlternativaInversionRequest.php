@@ -49,6 +49,11 @@ class AlternativaInversionRequest extends FormRequest
             'fuentes.*.dato' => ['nullable', 'string', Rule::in(array_keys(FuenteDato::DATO_CHOICES))],
             'fuentes.*.fuente_evidencia_id' => ['nullable', 'integer', 'exists:evidencias_documentales,id'],
             'fuentes.*.fuente_nota' => ['nullable', 'string', 'max:255'],
+
+            // Varianzas anuales por año (Año 1..vida_util_anios)
+            'varianzas' => ['nullable', 'array'],
+            'varianzas.*.varianza_ingreso_pct' => ['nullable', 'numeric', 'min:-100', 'max:1000'],
+            'varianzas.*.varianza_costo_pct' => ['nullable', 'numeric', 'min:-100', 'max:1000'],
         ];
     }
 
@@ -62,6 +67,12 @@ class AlternativaInversionRequest extends FormRequest
             'valor_salvamento.min' => 'El valor de rescate no puede ser negativo.',
             'tasa_tmar.min' => 'La TMAR debe ser mayor al 0%.',
             'tasa_tmar.max' => 'La TMAR no puede exceder el 100%.',
+            'varianzas.*.varianza_ingreso_pct.numeric' => 'La varianza porcentual de ingresos debe ser un número.',
+            'varianzas.*.varianza_ingreso_pct.min' => 'La varianza de ingresos no puede ser menor a -100%.',
+            'varianzas.*.varianza_ingreso_pct.max' => 'La varianza de ingresos no puede exceder 1000%.',
+            'varianzas.*.varianza_costo_pct.numeric' => 'La varianza porcentual de costos debe ser un número.',
+            'varianzas.*.varianza_costo_pct.min' => 'La varianza de costos no puede ser menor a -100%.',
+            'varianzas.*.varianza_costo_pct.max' => 'La varianza de costos no puede exceder 1000%.',
         ];
     }
 

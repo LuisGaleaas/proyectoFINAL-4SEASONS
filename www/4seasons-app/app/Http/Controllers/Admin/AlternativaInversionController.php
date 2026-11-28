@@ -34,8 +34,9 @@ class AlternativaInversionController extends Controller
     public function store(AlternativaInversionRequest $request): RedirectResponse
     {
         $alternativa = DB::transaction(function () use ($request) {
-            $alt = AlternativaInversion::create($request->safe()->except(['costos', 'fuentes']));
+            $alt = AlternativaInversion::create($request->safe()->except(['costos', 'fuentes', 'varianzas']));
             $this->sincronizarInlines($alt, $request->input('costos', []), $request->input('fuentes', []));
+            $this->sincronizarVarianzas($alt, $request->input('varianzas', []));
 
             return $alt;
         });
@@ -47,7 +48,7 @@ class AlternativaInversionController extends Controller
 
     public function edit(AlternativaInversion $alternativa): View
     {
-        $alternativa->load(['evidencias', 'costos', 'fuentesDatos']);
+        $alternativa->load(['evidencias', 'costos', 'fuentesDatos', 'varianzasAnuales']);
         $empresas = Empresa::orderBy('nombre')->get();
 
         return view('admin.alternativas.form', [
@@ -59,8 +60,9 @@ class AlternativaInversionController extends Controller
     public function update(AlternativaInversionRequest $request, AlternativaInversion $alternativa): RedirectResponse
     {
         DB::transaction(function () use ($request, $alternativa) {
-            $alternativa->update($request->safe()->except(['costos', 'fuentes']));
+            $alternativa->update($request->safe()->except(['costos', 'fuentes', 'varianzas']));
             $this->sincronizarInlines($alternativa, $request->input('costos', []), $request->input('fuentes', []));
+            $this->sincronizarVarianzas($alternativa, $request->input('varianzas', []));
         });
 
         return redirect()
@@ -157,5 +159,41 @@ class AlternativaInversionController extends Controller
             $fuentesIdsConservados[] = $nuevo->id;
         }
         $alternativa->fuentesDatos()->whereNotIn('id', $fuentesIdsConservados)->delete();
+    }
+
+    /**
+     * Sincroniza exactamente los registros de varianzas anuales desde Año 1 hasta vida_util_anios:
+     * crea los años faltantes en 0 ("Sin varianza") y elimina los excedentes si se redujo la vida útil.
+     */
+    private function sincronizarVarianzas(AlternativaInversion $alternativa, array $varianzasInput): void
+    {
+        $vidaUtil = max(1, (int) $alternativa->vida_util_anios);
+
+        $alternativa->varianzasAnuales()
+            ->where(function ($query) use ($vidaUtil) {
+                $query->where('anio', '<', 1)
+                    ->orWhere('anio', '>', $vidaUtil);
+            })
+            ->delete();
+
+        for ($anio = 1; $anio <= $vidaUtil; $anio++) {
+            $item = $varianzasInput[$anio] ?? $varianzasInput[(string) $anio] ?? [];
+
+            $varIngreso = isset($item['varianza_ingreso_pct']) && $item['varianza_ingreso_pct'] !== ''
+                ? round((float) $item['varianza_ingreso_pct'], 2)
+                : 0.00;
+
+            $varCosto = isset($item['varianza_costo_pct']) && $item['varianza_costo_pct'] !== ''
+                ? round((float) $item['varianza_costo_pct'], 2)
+                : 0.00;
+
+            $alternativa->varianzasAnuales()->updateOrCreate(
+                ['anio' => $anio],
+                [
+                    'varianza_ingreso_pct' => $varIngreso,
+                    'varianza_costo_pct' => $varCosto,
+                ]
+            );
+        }
     }
 }

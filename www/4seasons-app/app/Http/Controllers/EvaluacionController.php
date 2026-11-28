@@ -34,6 +34,7 @@ class EvaluacionController extends Controller
             'evidencias',
             'costos.fuenteEvidencia',
             'fuentesDatos.fuenteEvidencia',
+            'varianzasAnuales',
         ])->get();
 
         $empresa = Empresa::first();
@@ -50,14 +51,16 @@ class EvaluacionController extends Controller
             $valorSalvamento = (float) $alt->valor_salvamento;
             $tasaTmar = (float) $alt->tasa_tmar;
             $vidaUtilAnios = (int) $alt->vida_util_anios;
+            $varianzas = $this->calculos->normalizarVarianzas($alt->varianzasAnuales, $vidaUtilAnios);
 
-            // 1. Indicador CAUE
+            // 1. Indicador CAUE (soporta flujos irregulares año con año)
             $caue = $this->calculos->calcularCaue(
                 $inversionInicial,
                 $costoOperativoAnual,
                 $valorSalvamento,
                 $tasaTmar,
-                $vidaUtilAnios
+                $vidaUtilAnios,
+                $varianzas
             );
 
             // 2. Dos métodos de depreciación (Línea Recta y Suma de Dígitos)
@@ -72,14 +75,15 @@ class EvaluacionController extends Controller
             // Indexamos SDA por año para acceso directo O(1) en la vista
             $deprecSdaPorAnio = collect($deprecSda)->keyBy('anio');
 
-            // 3. Flujo de Efectivo Después de Impuestos (FEDI) para VPN y TIR
+            // 3. Flujo de Efectivo Después de Impuestos (FEDI) año por año para VPN y TIR
             $flujosFedi = $this->calculos->flujoDespuesDeImpuestos(
                 $ingresoAnual,
                 $costoOperativoAnual,
                 $inversionInicial,
                 $valorSalvamento,
                 $vidaUtilAnios,
-                $tasaIsr
+                $tasaIsr,
+                $varianzas
             );
 
             // 4. Indicadores restantes (VPN, TIR, B/C)
@@ -91,25 +95,19 @@ class EvaluacionController extends Controller
                 $costoOperativoAnual,
                 $valorSalvamento,
                 $tasaTmar,
-                $vidaUtilAnios
+                $vidaUtilAnios,
+                $varianzas
             );
 
-            // 5. Flujo neto para la línea de tiempo visual (Ingresos - Costos + Rescate)
-            $flujoCaja = [];
-            for ($anio = 0; $anio <= $vidaUtilAnios; $anio++) {
-                if ($anio === 0) {
-                    $monto = -$inversionInicial;
-                } elseif ($anio === $vidaUtilAnios) {
-                    $monto = $ingresoAnual - $costoOperativoAnual + $valorSalvamento;
-                } else {
-                    $monto = $ingresoAnual - $costoOperativoAnual;
-                }
-
-                $flujoCaja[] = [
-                    'anio' => $anio,
-                    'monto' => round($monto, 2),
-                ];
-            }
+            // 5. Flujo neto para la línea de tiempo visual (Ingresos_t - Costos_t + Rescate)
+            $flujoCaja = $this->calculos->flujosNetosTimeline(
+                $ingresoAnual,
+                $costoOperativoAnual,
+                $inversionInicial,
+                $valorSalvamento,
+                $vidaUtilAnios,
+                $varianzas
+            );
 
             $resultados[] = [
                 'objeto' => $alt,
@@ -120,6 +118,7 @@ class EvaluacionController extends Controller
                 'depreciacion' => $deprecLr,
                 'depreciacion_sda_por_anio' => $deprecSdaPorAnio,
                 'flujo_caja' => $flujoCaja,
+                'varianzas' => $varianzas,
                 'evidencias' => $alt->evidencias,
             ];
 

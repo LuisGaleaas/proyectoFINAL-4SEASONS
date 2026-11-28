@@ -41,6 +41,31 @@
             ['campo' => 'vida_util_anios', 'etiqueta' => 'Vida útil', 'antes' => null, 'despues' => 'años', 'step' => null, 'min' => '1', 'max' => '50', 'defecto' => 5],
             ['campo' => 'tasa_tmar', 'etiqueta' => 'TMAR', 'antes' => null, 'despues' => '%', 'step' => '0.01', 'min' => '0.01', 'max' => '100', 'defecto' => '12.00'],
         ];
+
+        $vidaUtilInicial = max(1, min(50, (int) old('vida_util_anios', $alternativa->vida_util_anios ?? 5)));
+        $varianzasGuardadas = $alternativa->exists
+            ? $alternativa->varianzasAnuales->keyBy('anio')
+            : collect();
+        $oldVarianzas = old('varianzas');
+        $varianzasIniciales = [];
+
+        for ($anio = 1; $anio <= $vidaUtilInicial; $anio++) {
+            $oldItem = is_array($oldVarianzas) ? ($oldVarianzas[$anio] ?? null) : null;
+            $guardada = $varianzasGuardadas->get($anio);
+
+            $varIng = is_array($oldItem) && array_key_exists('varianza_ingreso_pct', $oldItem)
+                ? ($oldItem['varianza_ingreso_pct'] ?? '0.00')
+                : ($guardada ? number_format((float) $guardada->varianza_ingreso_pct, 2, '.', '') : '0.00');
+
+            $varCost = is_array($oldItem) && array_key_exists('varianza_costo_pct', $oldItem)
+                ? ($oldItem['varianza_costo_pct'] ?? '0.00')
+                : ($guardada ? number_format((float) $guardada->varianza_costo_pct, 2, '.', '') : '0.00');
+
+            $varianzasIniciales[$anio] = [
+                'varianza_ingreso_pct' => $varIng === '' ? '0.00' : $varIng,
+                'varianza_costo_pct' => $varCost === '' ? '0.00' : $varCost,
+            ];
+        }
     @endphp
 
     <div class="mx-auto max-w-6xl px-4 pt-6 sm:px-6 lg:px-8">
@@ -248,6 +273,89 @@
                             </div>
                         @endforeach
                     </div>
+                </div>
+            </section>
+
+            {{-- Varianzas anuales por año (flujos de efectivo variables) --}}
+            <section aria-labelledby="titulo-varianzas" class="mt-10 border-t border-linea pt-10">
+                <div class="flex flex-wrap items-end justify-between gap-4">
+                    <div class="max-w-2xl">
+                        <h2 id="titulo-varianzas" class="text-xl font-semibold text-azul">Varianzas anuales (flujos variables)</h2>
+                        <p class="mt-2 text-[15px] leading-relaxed text-tinta-suave">
+                            Ajusta la variación porcentual (%) año por año sobre los ingresos y costos operativos base desde el Año 1 hasta la vida útil. El valor <strong class="font-medium text-azul">0</strong> representa <strong class="font-medium text-azul">Sin varianza</strong> (flujo constante).
+                        </p>
+                    </div>
+                    <button type="button" id="btn-reset-varianzas" class="btn btn-secundario btn-chico">
+                        Restablecer todo a 0 (Sin varianza)
+                    </button>
+                </div>
+
+                <div class="mt-6 overflow-x-auto rounded-marca-lg border border-linea bg-blanco">
+                    <table class="w-full min-w-[46rem] border-collapse text-left" id="tabla-varianzas">
+                        <thead class="border-b border-linea text-sm text-tinta-suave">
+                            <tr>
+                                <th scope="col" class="w-28 px-4 py-3 pl-5 font-medium">Año</th>
+                                <th scope="col" class="w-48 px-3 py-3 font-medium">Varianza ingreso (%)</th>
+                                <th scope="col" class="w-48 px-3 py-3 font-medium">Varianza costo (%)</th>
+                                <th scope="col" class="px-3 py-3 font-medium">Proyección estimada</th>
+                                <th scope="col" class="w-36 px-3 py-3 pr-5 text-right font-medium">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-linea">
+                            @foreach ($varianzasIniciales as $anio => $var)
+                                @php
+                                    $vIngNum = (float) $var['varianza_ingreso_pct'];
+                                    $vCostNum = (float) $var['varianza_costo_pct'];
+                                    $esSinVarianza = abs($vIngNum) < 0.001 && abs($vCostNum) < 0.001;
+                                @endphp
+                                <tr data-anio="{{ $anio }}">
+                                    <th scope="row" class="px-4 py-2.5 pl-5 font-semibold text-azul tabular-nums">
+                                        Año {{ $anio }}
+                                    </th>
+                                    <td class="px-3 py-2.5">
+                                        <div class="campo-unidad">
+                                            <input type="number"
+                                                   name="varianzas[{{ $anio }}][varianza_ingreso_pct]"
+                                                   step="0.01"
+                                                   min="-100"
+                                                   max="1000"
+                                                   value="{{ $var['varianza_ingreso_pct'] }}"
+                                                   data-anio="{{ $anio }}"
+                                                   data-tipo="ingreso"
+                                                   aria-label="Varianza de ingreso año {{ $anio }} en porcentaje"
+                                                   class="var-anio-input campo campo-compacto tabular-nums" />
+                                            <span>%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-2.5">
+                                        <div class="campo-unidad">
+                                            <input type="number"
+                                                   name="varianzas[{{ $anio }}][varianza_costo_pct]"
+                                                   step="0.01"
+                                                   min="-100"
+                                                   max="1000"
+                                                   value="{{ $var['varianza_costo_pct'] }}"
+                                                   data-anio="{{ $anio }}"
+                                                   data-tipo="costo"
+                                                   aria-label="Varianza de costo año {{ $anio }} en porcentaje"
+                                                   class="var-anio-input campo campo-compacto tabular-nums" />
+                                            <span>%</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-2.5 text-sm text-tinta-suave tabular-nums var-proyeccion" data-anio="{{ $anio }}">
+                                        —
+                                    </td>
+                                    <td class="px-3 py-2.5 pr-5 text-right var-estado" data-anio="{{ $anio }}">
+                                        @if ($esSinVarianza)
+                                            <span class="inline-flex rounded-full bg-neutro px-2.5 py-0.5 text-xs font-medium text-tinta-suave">Sin varianza</span>
+                                        @else
+                                            <span class="inline-flex rounded-full bg-aqua-100 px-2.5 py-0.5 text-xs font-medium text-azul">Ajustado</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
@@ -521,6 +629,164 @@
                 if (boton) {
                     boton.closest("tr").remove();
                 }
+            });
+
+            // Generación dinámica y proyección en vivo de varianzas anuales (Año 1..vida_util_anios)
+            const vidaInput = document.getElementById("vida_util_anios");
+            const ingresoInput = document.getElementById("ingreso_anual");
+            const costoInput = document.getElementById("costo_operativo_anual");
+            const tablaVarianzasBody = document.querySelector("#tabla-varianzas tbody");
+            const btnResetVarianzas = document.getElementById("btn-reset-varianzas");
+
+            const varianzasCache = {};
+            tablaVarianzasBody.querySelectorAll("tr[data-anio]").forEach((tr) => {
+                const anio = parseInt(tr.getAttribute("data-anio"), 10);
+                const ingEl = tr.querySelector('input[data-tipo="ingreso"]');
+                const costEl = tr.querySelector('input[data-tipo="costo"]');
+                varianzasCache[anio] = {
+                    ingreso: ingEl ? ingEl.value : "0.00",
+                    costo: costEl ? costEl.value : "0.00",
+                };
+            });
+
+            function actualizarProyeccionFila(anio) {
+                const tr = tablaVarianzasBody.querySelector(`tr[data-anio="${anio}"]`);
+                if (!tr) return;
+
+                const ingBase = Math.max(0, parseFloat(ingresoInput?.value) || 0);
+                const costBase = Math.max(0, parseFloat(costoInput?.value) || 0);
+                const ingEl = tr.querySelector('input[data-tipo="ingreso"]');
+                const costEl = tr.querySelector('input[data-tipo="costo"]');
+
+                const vIng = parseFloat(ingEl?.value) || 0;
+                const vCost = parseFloat(costEl?.value) || 0;
+
+                const ingAnio = ingBase * (1 + vIng / 100);
+                const costAnio = costBase * (1 + vCost / 100);
+                const netoAnio = ingAnio - costAnio;
+
+                const proyCell = tr.querySelector(".var-proyeccion");
+                if (proyCell) {
+                    const signo = netoAnio >= 0 ? "+" : "-";
+                    proyCell.innerHTML = `Ing: <strong class="font-medium text-azul">$${ingAnio.toFixed(2)}</strong> · Costo: <strong class="font-medium text-azul">$${costAnio.toFixed(2)}</strong> · Neto: <strong class="font-medium ${netoAnio < 0 ? "text-peligro" : "text-exito"}">${signo}$${Math.abs(netoAnio).toFixed(2)}</strong>`;
+                }
+
+                const estadoCell = tr.querySelector(".var-estado");
+                if (estadoCell) {
+                    const sinVarianza = Math.abs(vIng) < 0.001 && Math.abs(vCost) < 0.001;
+                    estadoCell.innerHTML = sinVarianza
+                        ? '<span class="inline-flex rounded-full bg-neutro px-2.5 py-0.5 text-xs font-medium text-tinta-suave">Sin varianza</span>'
+                        : '<span class="inline-flex rounded-full bg-aqua-100 px-2.5 py-0.5 text-xs font-medium text-azul">Ajustado</span>';
+                }
+            }
+
+            function renderizarFilasVarianzas(n) {
+                tablaVarianzasBody.innerHTML = "";
+
+                for (let anio = 1; anio <= n; anio++) {
+                    if (!varianzasCache[anio]) {
+                        varianzasCache[anio] = { ingreso: "0.00", costo: "0.00" };
+                    }
+                    const { ingreso, costo } = varianzasCache[anio];
+                    const tr = document.createElement("tr");
+                    tr.setAttribute("data-anio", String(anio));
+                    tr.innerHTML = `
+                        <th scope="row" class="px-4 py-2.5 pl-5 font-semibold text-azul tabular-nums">Año ${anio}</th>
+                        <td class="px-3 py-2.5">
+                            <div class="campo-unidad">
+                                <input type="number" name="varianzas[${anio}][varianza_ingreso_pct]" step="0.01" min="-100" max="1000" value="${ingreso}" data-anio="${anio}" data-tipo="ingreso" aria-label="Varianza de ingreso año ${anio} en porcentaje" class="var-anio-input campo campo-compacto tabular-nums" />
+                                <span>%</span>
+                            </div>
+                        </td>
+                        <td class="px-3 py-2.5">
+                            <div class="campo-unidad">
+                                <input type="number" name="varianzas[${anio}][varianza_costo_pct]" step="0.01" min="-100" max="1000" value="${costo}" data-anio="${anio}" data-tipo="costo" aria-label="Varianza de costo año ${anio} en porcentaje" class="var-anio-input campo campo-compacto tabular-nums" />
+                                <span>%</span>
+                            </div>
+                        </td>
+                        <td class="px-3 py-2.5 text-sm text-tinta-suave tabular-nums var-proyeccion" data-anio="${anio}">—</td>
+                        <td class="px-3 py-2.5 pr-5 text-right var-estado" data-anio="${anio}"></td>
+                    `;
+                    tablaVarianzasBody.appendChild(tr);
+                    actualizarProyeccionFila(anio);
+                }
+            }
+
+            tablaVarianzasBody.addEventListener("input", function (e) {
+                const input = e.target.closest(".var-anio-input");
+                if (!input) return;
+
+                const anio = parseInt(input.getAttribute("data-anio"), 10);
+                const tipo = input.getAttribute("data-tipo");
+                if (!varianzasCache[anio]) {
+                    varianzasCache[anio] = { ingreso: "0.00", costo: "0.00" };
+                }
+
+                let val = parseFloat(input.value);
+                if (!isNaN(val)) {
+                    if (val < -100) {
+                        val = -100;
+                        input.value = "-100";
+                    } else if (val > 1000) {
+                        val = 1000;
+                        input.value = "1000";
+                    }
+                }
+
+                varianzasCache[anio][tipo] = input.value === "" ? "0.00" : input.value;
+                actualizarProyeccionFila(anio);
+            });
+
+            function sincronizarVidaUtil() {
+                if (!vidaInput) return;
+                const raw = vidaInput.value.trim();
+                if (raw === "") return;
+
+                let n = parseInt(raw, 10);
+                if (isNaN(n)) return;
+                if (n < 1) n = 1;
+                if (n > 50) n = 50;
+
+                renderizarFilasVarianzas(n);
+            }
+
+            if (vidaInput) {
+                vidaInput.addEventListener("input", sincronizarVidaUtil);
+                vidaInput.addEventListener("change", function () {
+                    let n = parseInt(vidaInput.value, 10);
+                    if (isNaN(n) || n < 1) n = 1;
+                    if (n > 50) n = 50;
+                    vidaInput.value = String(n);
+                    renderizarFilasVarianzas(n);
+                });
+            }
+
+            [ingresoInput, costoInput].forEach((el) => {
+                if (!el) return;
+                el.addEventListener("input", () => {
+                    tablaVarianzasBody.querySelectorAll("tr[data-anio]").forEach((tr) => {
+                        actualizarProyeccionFila(parseInt(tr.getAttribute("data-anio"), 10));
+                    });
+                });
+            });
+
+            if (btnResetVarianzas) {
+                btnResetVarianzas.addEventListener("click", () => {
+                    Object.keys(varianzasCache).forEach((k) => {
+                        varianzasCache[k] = { ingreso: "0.00", costo: "0.00" };
+                    });
+                    tablaVarianzasBody.querySelectorAll(".var-anio-input").forEach((inp) => {
+                        inp.value = "0.00";
+                    });
+                    tablaVarianzasBody.querySelectorAll("tr[data-anio]").forEach((tr) => {
+                        actualizarProyeccionFila(parseInt(tr.getAttribute("data-anio"), 10));
+                    });
+                });
+            }
+
+            // Inicializar proyecciones en carga
+            tablaVarianzasBody.querySelectorAll("tr[data-anio]").forEach((tr) => {
+                actualizarProyeccionFila(parseInt(tr.getAttribute("data-anio"), 10));
             });
         });
     </script>
